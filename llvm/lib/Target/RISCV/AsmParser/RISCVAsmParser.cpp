@@ -767,6 +767,15 @@ public:
            VK == RISCVMCExpr::VK_RISCV_None;
   }
 
+  bool isSImm8() const {
+    if (!isImm())
+      return false;
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    int64_t Imm;
+    bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+    return IsConstantImm && isInt<8>(Imm) && VK == RISCVMCExpr::VK_RISCV_None;
+  }
+
   bool isSImm6NonZero() const {
     if (!isImm())
       return false;
@@ -964,6 +973,17 @@ public:
     return IsConstantImm &&
            isInt<5>(fixImmediateForRV32(Imm, isRV64Imm()) - 1) &&
            VK == RISCVMCExpr::VK_RISCV_None;
+  }
+
+  bool isUImm4Pref() const {
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    int64_t Imm;
+    if (!isImm())
+      return false;
+    bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
+    if (Imm == 0 || Imm == 1 || Imm == 2 || Imm == 3 || Imm == 8)
+      return true;
+    return false;
   }
 
   /// getStartLoc - Gets location of the first token of this operand
@@ -1484,6 +1504,9 @@ bool RISCVAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
   case Match_InvalidSImm6:
     return generateImmOutOfRangeError(Operands, ErrorInfo, -(1 << 5),
                                       (1 << 5) - 1);
+  case Match_InvalidSImm8:
+    return generateImmOutOfRangeError(Operands, ErrorInfo, -(1 << 7),
+                                      (1 << 7) - 1);
   case Match_InvalidSImm6NonZero:
     return generateImmOutOfRangeError(
         Operands, ErrorInfo, -(1 << 5), (1 << 5) - 1,
@@ -1558,6 +1581,10 @@ bool RISCVAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     return generateImmOutOfRangeError(Operands, ErrorInfo, 0, (1 << 12) - 1,
                                       "operand must be a valid system register "
                                       "name or an integer in the range");
+  }
+  case Match_InvalidUImm4Pref: {
+    SMLoc ErrorLoc = ((RISCVOperand &)*Operands[ErrorInfo]).getStartLoc();
+    return Error(ErrorLoc, "pref type must be the value 0, 1, 2, 3 or 8");
   }
   case Match_InvalidLoadFPImm: {
     SMLoc ErrorLoc = ((RISCVOperand &)*Operands[ErrorInfo]).getStartLoc();
