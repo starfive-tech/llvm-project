@@ -593,6 +593,12 @@ class ShiftW_ri<bits<7> imm11_5, bits<3> funct3, string opcodestr>
                     "$rd, $rs1, $shamt">,
       Sched<[WriteShiftImm32, ReadShiftImm32]>;
 
+let hasNoSchedulingInfo = 1,
+    hasSideEffects = 1, mayLoad = 0, mayStore = 0 in
+class CSR_cache<bits<12> cache, string opcodestr>
+    : RVInstCache<cache, OPC_SYSTEM, (outs), (ins GPR:$rs1),
+              opcodestr, "$rs1">, Sched<[WriteCSR, ReadCSR]>;
+
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class ALUW_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
               bit Commutable = 0>
@@ -760,6 +766,11 @@ def CSRRC : CSR_ir<0b011, "csrrc">;
 def CSRRWI : CSR_ii<0b101, "csrrwi">;
 def CSRRSI : CSR_ii<0b110, "csrrsi">;
 def CSRRCI : CSR_ii<0b111, "csrrci">;
+
+def CFLUSH_D_L1   : CSR_cache<0b111111000000, "cflush.d.l1">;
+def CDISCARD_D_L1 : CSR_cache<0b111111000010, "cdiscard.d.l1">;
+def CFLUSH_D_L2   : CSR_cache<0b111111000100, "cflush.d.l2">;
+def CDISCARD_D_L2 : CSR_cache<0b111111000110, "cdiscard.d.l2">;
 
 /// RV64I instructions
 
