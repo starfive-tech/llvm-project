@@ -317,12 +317,7 @@ StringRef riscv::getRISCVArch(const llvm::opt::ArgList &Args,
     else
       return "rv32imafdc";
   } else {
-    if (Triple.getOS() == llvm::Triple::UnknownOS)
-      return "rv64imac";
-    else if (Triple.isAndroid())
-      return "rv64imafdcv_zba_zbb_zbs";
-    else
-      return "rv64imafdc";
+    return "rv64imafdc_zba_zbb_zbc_zbs";
   }
 }
 

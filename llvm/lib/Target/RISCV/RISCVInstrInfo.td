@@ -238,6 +238,22 @@ def simm12 : RISCVSImmLeafOp<12> {
   }];
 }
 
+def uimm4_pref : Operand<XLenVT>, ImmLeaf<XLenVT, [{return isUInt<4>(Imm);}]> {
+  let ParserMatchClass = UImmAsmOperand<4, "Pref">;
+  let EncoderMethod = "getImmOpValue";
+  let DecoderMethod = "decodeUImmOperand<4>";
+  let OperandType = "OPERAND_UIMM4_PREF";
+  let OperandNamespace = "RISCVOp";
+}
+
+def simm8 : Operand<XLenVT>, ImmLeaf<XLenVT, [{return isInt<8>(Imm);}]> {
+  let ParserMatchClass = SImmAsmOperand<8>;
+  let EncoderMethod = "getImmOpValue";
+  let DecoderMethod = "decodeSImmOperand<8>";
+  let OperandType = "OPERAND_SIMM8";
+  let OperandNamespace = "RISCVOp";
+}
+
 // A 12-bit signed immediate which cannot fit in 6-bit signed immediate,
 // but even negative value fit in 12-bit.
 def simm12_no6 : ImmLeaf<XLenVT, [{
@@ -577,6 +593,12 @@ class ShiftW_ri<bits<7> imm11_5, bits<3> funct3, string opcodestr>
                     "$rd, $rs1, $shamt">,
       Sched<[WriteShiftImm32, ReadShiftImm32]>;
 
+let hasNoSchedulingInfo = 1,
+    hasSideEffects = 1, mayLoad = 0, mayStore = 0 in
+class CSR_cache<bits<12> cache, string opcodestr>
+    : RVInstCache<cache, OPC_SYSTEM, (outs), (ins GPR:$rs1),
+              opcodestr, "$rs1">, Sched<[WriteCSR, ReadCSR]>;
+
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class ALUW_rr<bits<7> funct7, bits<3> funct3, string opcodestr,
               bit Commutable = 0>
@@ -596,6 +618,12 @@ class Priv_rr<string opcodestr, bits<7> funct7>
               opcodestr, "$rs1, $rs2"> {
   let rd = 0;
 }
+
+let hasNoSchedulingInfo = 1,
+    hasSideEffects = 1, mayLoad = 0, mayStore = 0 in
+class PREF_iir<string opcodestr>
+    : RVInstPref<OPC_OP_IMM, (outs), (ins uimm4_pref:$imm4, simm8:$imm8, GPR:$rs1),
+              opcodestr, "$imm4, ${imm8}(${rs1})">;
 
 //===----------------------------------------------------------------------===//
 // Instructions
@@ -739,6 +767,11 @@ def CSRRWI : CSR_ii<0b101, "csrrwi">;
 def CSRRSI : CSR_ii<0b110, "csrrsi">;
 def CSRRCI : CSR_ii<0b111, "csrrci">;
 
+def CFLUSH_D_L1   : CSR_cache<0b111111000000, "cflush.d.l1">;
+def CDISCARD_D_L1 : CSR_cache<0b111111000010, "cdiscard.d.l1">;
+def CFLUSH_D_L2   : CSR_cache<0b111111000100, "cflush.d.l2">;
+def CDISCARD_D_L2 : CSR_cache<0b111111000110, "cdiscard.d.l2">;
+
 /// RV64I instructions
 
 let Predicates = [IsRV64] in {
@@ -770,6 +803,7 @@ def SRAW  : ALUW_rr<0b0100000, 0b101, "sraw">,
 } // IsSignExtendingOpW = 1
 } // Predicates = [IsRV64]
 
+def PREF : PREF_iir<"pref">;
 //===----------------------------------------------------------------------===//
 // Privileged instructions
 //===----------------------------------------------------------------------===//

@@ -21261,6 +21261,57 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_sm3p1:
     ID = Intrinsic::riscv_sm3p1;
     break;
+  //scalable vector type <-> fixed vector types
+  case RISCV::BI__builtin_rvv_type_cast_from_i8m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_i8m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_i16m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_i16m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_i32m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_i32m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_i64m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_i64m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_u8m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_u8m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_u16m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_u16m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_u32m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_u32m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_u64m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_u64m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_f16m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_f16m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_f32m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_f32m2:
+  case RISCV::BI__builtin_rvv_type_cast_from_f64m1:
+  case RISCV::BI__builtin_rvv_type_cast_from_f64m2:
+  {
+    return Builder.CreateInsertVector(ResultType, UndefValue::get(ResultType), Ops[0], Builder.getInt64(0));
+  }
+  case RISCV::BI__builtin_rvv_type_cast_to_i8m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_i8m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_i16m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_i16m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_i32m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_i32m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_i64m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_i64m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_u8m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_u8m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_u16m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_u16m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_u32m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_u32m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_u64m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_u64m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_f16m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_f16m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_f32m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_f32m2:
+  case RISCV::BI__builtin_rvv_type_cast_to_f64m1:
+  case RISCV::BI__builtin_rvv_type_cast_to_f64m2:
+  {
+    return Builder.CreateExtractVector(ResultType, Ops[0], Builder.getInt64(0));
+  }
 
   // Zihintntl
   case RISCV::BI__builtin_riscv_ntl_load: {

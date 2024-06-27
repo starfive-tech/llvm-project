@@ -1090,3 +1090,15 @@ def FeatureTaggedGlobals : SubtargetFeature<"tagged-globals",
     "AllowTaggedGlobals",
     "true", "Use an instruction sequence for taking the address of a global "
     "that allows a memory tag in the upper address bits">;
+
+def FeatureStdExtB
+    : SubtargetFeature<"b", "HasStdExtB", "true",
+                       "'B' (Bit Manipulation Instructions)",
+                       [FeatureStdExtZba,
+                        FeatureStdExtZbb,
+                        FeatureStdExtZbc,
+                        FeatureStdExtZbs]>;
+def HasStdExtB : Predicate<"Subtarget->hasStdExtB()">,
+                           AssemblerPredicate<(all_of FeatureStdExtB),
+                           "'B' (Bit Manipulation Instructions)">;
+

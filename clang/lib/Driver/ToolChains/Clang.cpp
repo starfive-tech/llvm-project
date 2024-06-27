@@ -518,6 +518,7 @@ static void addCoveragePrefixMapArg(const Driver &D, const ArgList &Args,
 /// For -Oz the loop vectorizer is disabled, while the slp vectorizer is
 /// enabled.
 static bool shouldEnableVectorizerAtOLevel(const ArgList &Args, bool isSlpVec) {
+  return false;
   if (Arg *A = Args.getLastArg(options::OPT_O_Group)) {
     if (A->getOption().matches(options::OPT_O4) ||
         A->getOption().matches(options::OPT_Ofast))

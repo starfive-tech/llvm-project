@@ -46,6 +46,7 @@ static const char *RISCVGImplications[] = {
 // NOTE: This table should be sorted alphabetically by extension name.
 static const RISCVSupportedExtension SupportedExtensions[] = {
     {"a", {2, 1}},
+    {"b", {1, 0}},
     {"c", {2, 0}},
     {"d", {2, 2}},
     {"e", {2, 0}},
@@ -858,7 +859,13 @@ RISCVISAInfo::parseArchString(StringRef Arch, bool EnableExperimentalExtension,
                                "unsupported standard user-level extension '%c'",
                                C);
     }
-    ISAInfo->addExtension(StringRef(&C, 1), {Major, Minor});
+    if (C == 'b') {
+      ISAInfo->addExtension("zba", {Major, Minor});
+      ISAInfo->addExtension("zbb", {Major, Minor});
+      ISAInfo->addExtension("zbc", {Major, Minor});
+      ISAInfo->addExtension("zbs", {Major, Minor});
+    } else
+      ISAInfo->addExtension(StringRef(&C, 1), {Major, Minor});
 
     // Consume full extension name and version, including any optional '_'
     // between this extension and the next
